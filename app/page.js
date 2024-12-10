@@ -1,15 +1,16 @@
 'use client'
-
+ 
 import { useState, useEffect } from 'react';
 import { Search, RefreshCw, ThermometerSun, Wind, Droplets } from "lucide-react";
-
+import Link from 'next/link';
+ 
 export default function WeatherApp() {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchCity, setSearchCity] = useState('');
   const [isCelsius, setIsCelsius] = useState(true);
-
+ 
   const fetchWeatherByCoords = async (lat, lon) => {
     try {
       setLoading(true);
@@ -25,21 +26,21 @@ export default function WeatherApp() {
       setLoading(false);
     }
   };
-
+ 
   const fetchWeatherByCity = async () => {
     if (!searchCity.trim()) return;
-    
+   
     try {
       setLoading(true);
       const geoResponse = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${searchCity}&count=1&language=en&format=json`
       );
       const geoData = await geoResponse.json();
-      
+     
       if (!geoData.results?.[0]) {
         throw new Error('City Indvalid');
       }
-
+ 
       const { latitude, longitude, name } = geoData.results[0];
       await fetchWeatherByCoords(latitude, longitude);
       setSearchCity(name);
@@ -49,7 +50,7 @@ export default function WeatherApp() {
       setLoading(false);
     }
   };
-
+ 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -66,11 +67,11 @@ export default function WeatherApp() {
       setLoading(false);
     }
   };
-
+ 
   useEffect(() => {
     getCurrentLocation();
   }, []);
-
+ 
   const getWeatherDescription = (code) => {
     const weatherCodes = {
       0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
@@ -84,7 +85,7 @@ export default function WeatherApp() {
     };
     return weatherCodes[code] || 'Unknown';
   };
-
+ 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-400 to-blue-600">
@@ -92,17 +93,25 @@ export default function WeatherApp() {
       </div>
     );
   }
-
-
+ 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-400 to-blue-600 p-4">
       <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+        <div className="flex justify-end mb-4">
+          <Link href="/about">
+            <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transform hover:scale-105 transition-duration-300 flex items-center gap-2">
+              About Us
+              <span className="animate-pulse">→</span>
+            </button>
+          </Link>
+        </div>
+ 
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
-        
+       
         <div className="flex gap-2 mb-6">
           <input
             type="text"
@@ -112,19 +121,18 @@ export default function WeatherApp() {
             onKeyPress={(e) => e.key === 'Enter' && fetchWeatherByCity()}
             className="flex-grow px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <button 
+          <button
             onClick={fetchWeatherByCity}
             className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg"
           >
             <Search size={24} />
           </button>
         </div>
-
-
+ 
         {weather && (
           <div className="text-center">
             <div className="flex justify-between items-center mb-6">
-              <button 
+              <button
                 onClick={getCurrentLocation}
                 className="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg"
               >
@@ -137,14 +145,14 @@ export default function WeatherApp() {
                 Switch to {isCelsius ? '°F' : '°C'}
               </button>
             </div>
-
+ 
             <div className="mb-8">
               <h1 className="text-2xl font-bold text-gray-800 mb-2">
                 {searchCity || 'Current Location'}
               </h1>
               <div className="flex items-center justify-center gap-2 text-6xl font-bold text-gray-900 mb-4">
                 <ThermometerSun size={48} />
-                {isCelsius ? 
+                {isCelsius ?
                   `${Math.round(weather.current.temperature_2m)}°C` :
                   `${Math.round(weather.current.temperature_2m * 9/5 + 32)}°F`
                 }
@@ -153,7 +161,7 @@ export default function WeatherApp() {
                 {getWeatherDescription(weather.current.weather_code)}
               </div>
             </div>
-
+ 
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-blue-50 rounded-lg p-4">
                 <div className="flex items-center justify-center gap-2 text-gray-500">
@@ -179,4 +187,4 @@ export default function WeatherApp() {
       </div>
     </div>
   );
-}
+}                    
